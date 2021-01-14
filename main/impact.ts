@@ -57,7 +57,7 @@ export function calculateImpactTime(
     }
 }
 
-function calculateNextImpact(
+export function calculateNextImpact(
     circles: Circle[]
 ): {A: Circle, B: Circle, time: number} | undefined {
     let closestImpact: {A: Circle, B: Circle, time: number} = undefined;
@@ -68,7 +68,7 @@ function calculateNextImpact(
 
         for (let j = i + 1; j < count; j++) {
 
-            const B = circles[i];
+            const B = circles[j];
 
             const time = calculateImpactTime(A, B);
             if (time != undefined && (closestImpact == undefined || time < closestImpact.time)) {

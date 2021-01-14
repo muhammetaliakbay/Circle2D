@@ -7,4 +7,11 @@ export class Circle {
         public velocity: Vector
     ) {
     }
+
+    public getPositionByTime(time: number): Vector {
+        return new Vector(
+            this.position.x + this.velocity.x * time,
+            this.position.y + this.velocity.y * time
+        );
+    }
 }
