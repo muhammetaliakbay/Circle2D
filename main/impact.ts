@@ -31,7 +31,7 @@ export function calculateCircleCircleImpactTime(
         t = Math.min(t1, t2);
     }
 
-    if (t == undefined) {
+    if (t == undefined || isNaN(t)) {
         return undefined;
     } else {
         const centerA = A.getPositionByTime(t);
@@ -87,7 +87,7 @@ export function calculateStaticLineCircleImpactTime(
         t = Math.min(t1, t2);
     }
 
-    if (t == undefined) {
+    if (t == undefined || isNaN(t)) {
         return undefined;
     } else {
         const center = circle.getPositionByTime(t);

@@ -66,7 +66,7 @@ export function demo1(
 
     let timeOffset = 0;
     const animation = (frameTime) => {
-        let time = (frameTime - timeOffset)/1000;
+        let time = (frameTime - timeOffset)/500;
 
         if (impact != undefined) {
             time = Math.min(impact.time, time);
@@ -74,6 +74,7 @@ export function demo1(
             if (time === impact.time) {
                 applyResponse(impact, elements);
                 impact = calculateNextImpact(elements, impact);
+                console.log(impact);
                 timeOffset = frameTime;
                 time = 0;
             }
