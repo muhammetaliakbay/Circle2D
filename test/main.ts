@@ -1,6 +1,6 @@
 import {Circle} from "../main/circle";
 import {Vector} from "../main/vector";
-import {calculateImpactTime} from "../main/impact";
+import {calculateCircleCircleImpactTime} from "../main/impact";
 
 const A = new Circle(
     1,
@@ -14,5 +14,5 @@ const B = new Circle(
     new Vector(-1, 0)
 );
 
-const impactT = calculateImpactTime(A, B);
+const impactT = calculateCircleCircleImpactTime(A, B);
 console.log(impactT);

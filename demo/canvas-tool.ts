@@ -42,4 +42,34 @@ export class CanvasTool {
         this.context.closePath();
         this.context.fill();
     }
+
+    drawLine(
+        {
+            points: {
+                a: {x: aX, y: aY},
+                b: {x: bX, y: bY}
+            },
+            style: {
+                stroke: strokeStyle
+            }
+        }: {
+            points: {
+                a: {x: number, y: number},
+                b: {x: number, y: number}
+            },
+            style: {
+                stroke: string
+            }
+        }
+    ) {
+        const length = Math.sqrt((aX-bX)**2 + (aY-bY)**2);
+        const scale = Math.max(this.canvas.width, this.canvas.height) / length;
+
+        this.context.strokeStyle = strokeStyle;
+        this.context.beginPath();
+        this.context.moveTo(aX - (bX-aX)*scale, aY - (bY-aY)*scale);
+        this.context.lineTo(bX + (bX-aX)*scale, bY + (bY-aY)*scale);
+        this.context.closePath();
+        this.context.stroke();
+    }
 }
