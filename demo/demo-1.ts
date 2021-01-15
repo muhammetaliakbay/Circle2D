@@ -29,12 +29,15 @@ export function demo1(
         const v = (i%4==0?-1:2) * chance.floating({min: 0, max: maxVComp});
         const vx = -Math.cos(angle)*v;
         const vy = -Math.sin(angle)*v;
+        const radius = chance.floating({
+            min: minRadius, max: maxRadius
+        });
+        const mass = radius**2;
         circles[i] = new Circle(
-            chance.floating({
-                min: minRadius, max: maxRadius
-            }),
+            radius,
             new Vector(x, y),
-            new Vector(vx, vy)
+            new Vector(vx, vy),
+            mass
         );
     }
 
@@ -72,17 +75,7 @@ export function demo1(
         tool.clear();
 
         for (const circle of circles) {
-            const impactCircle = impact.A === circle || impact.B === circle;
-
-            tool.drawCircle({
-                center: circle.getPositionByTime(t),
-                radius: circle.radius,
-                style: {fill: impactCircle ? 'red' : 'white'}
-            });
-        }
-
-        for (const circle of circles) {
-            const impactCircle = impact.A === circle || impact.B === circle;
+            const impactCircle = impact?.A === circle || impact?.B === circle;
 
             tool.drawCircle({
                 center: circle.getPositionByTime(t),
@@ -92,7 +85,7 @@ export function demo1(
         }
 
         for (const line of lines) {
-            const impactLine = impact.A === line || impact.B === line;
+            const impactLine = impact?.A === line || impact?.B === line;
 
             tool.drawLine({
                 points: {
@@ -100,6 +93,15 @@ export function demo1(
                     b: line.b
                 },
                 style: {stroke: impactLine ? 'red' : 'white'}
+            });
+        }
+
+        if (impact?.point != undefined) {
+            const impactPoint = impact.point;
+            tool.drawCircle({
+                center: impactPoint,
+                radius: 4,
+                style: {fill: 'yellow'}
             });
         }
 

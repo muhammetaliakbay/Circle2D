@@ -1,10 +1,11 @@
 import {Circle} from "./circle";
 import {calculateRoots} from "./polynom";
 import {StaticLine} from "./static-line";
+import {Vector} from "./vector";
 
 export function calculateCircleCircleImpactTime(
     A: Circle, B: Circle
-): number | undefined {
+): { time: number, point: Vector } | undefined {
     const a = (A.velocity.x - B.velocity.x)**2 + (A.velocity.y - B.velocity.y)**2;
 
     const b = 2*(
@@ -20,19 +21,37 @@ export function calculateCircleCircleImpactTime(
     }
 
     const [t1, t2] = roots;
+    let t;
 
     if (t1 < 0) {
-        return t2 < 0 ? undefined : t2;
+        t = t2 < 0 ? undefined : t2;
     } else if (t2 < 0) {
-        return t1 < 0 ? undefined : t1;
+        t = t1 < 0 ? undefined : t1;
     } else {
-        return Math.min(t1, t2);
+        t = Math.min(t1, t2);
+    }
+
+    if (t == undefined) {
+        return undefined;
+    } else {
+        const centerA = A.getPositionByTime(t);
+        const centerB = B.getPositionByTime(t);
+
+        const point = new Vector(
+            (centerA.x * B.radius + centerB.x * A.radius) / (A.radius + B.radius),
+            (centerA.y * B.radius + centerB.y * A.radius) / (A.radius + B.radius)
+        );
+
+        return {
+            point,
+            time: t
+        }
     }
 }
 
 export function calculateStaticLineCircleImpactTime(
     line: StaticLine, circle: Circle
-): number | undefined {
+): {time: number, point: Vector} | undefined {
     let A = line.a;
     let B = line.b;
 
@@ -58,12 +77,36 @@ export function calculateStaticLineCircleImpactTime(
     const t2 =
         ( -(a * circle.position.x + b * circle.position.y + c) - circle.radius * Math.sqrt(a**2 + b**2) ) / tDivider;
 
+    let t;
+
     if (t1 < 0) {
-        return t2 < 0 ? undefined : t2;
+        t = t2 < 0 ? undefined : t2;
     } else if (t2 < 0) {
-        return t1 < 0 ? undefined : t1;
+        t = t1 < 0 ? undefined : t1;
     } else {
-        return Math.min(t1, t2);
+        t = Math.min(t1, t2);
+    }
+
+    if (t == undefined) {
+        return undefined;
+    } else {
+        const center = circle.getPositionByTime(t);
+
+        let point: Vector;
+        if (a == 0) {
+            point = new Vector(center.x, A.y /*or B.y*/);
+        } else if (b == 0) {
+            point = new Vector(A.x /*or B.x*/, center.y);
+        } else {
+            const x = (a * center.x - b * center.y - c) / (2 * a);
+            const y = -(c + a * x) / b;
+            point = new Vector(x, y);
+        }
+
+        return {
+            point,
+            time: t
+        } as any;
     }
 }
 
@@ -76,9 +119,12 @@ const impactTimeCalculators = {
     }
 };
 
-export function calculateImpactTime(
+export function calculateImpact(
     a: StaticLine | Circle, b: StaticLine | Circle
-): number | undefined {
+): {
+    time: number,
+    point: Vector
+} | undefined {
     let calculator = impactTimeCalculators[a.getType()]?.[b.getType()];
     if (calculator == undefined) {
         calculator = impactTimeCalculators[b.getType()]?.[a.getType()];
@@ -94,8 +140,8 @@ export function calculateImpactTime(
 
 export function calculateNextImpact(
     elements: (Circle | StaticLine)[]
-): {A: Circle | StaticLine, B: Circle | StaticLine, time: number} | undefined {
-    let closestImpact: {A: Circle | StaticLine, B: Circle | StaticLine, time: number} = undefined;
+): {A: Circle | StaticLine, B: Circle | StaticLine, time: number, point: Vector} | undefined {
+    let closestImpact: {A: Circle | StaticLine, B: Circle | StaticLine, time: number, point: Vector} = undefined;
 
     const count = elements.length;
     for (let i = 0; i < count - 1; i++) {
@@ -105,9 +151,9 @@ export function calculateNextImpact(
 
             const B = elements[j];
 
-            const time = calculateImpactTime(A, B);
-            if (time != undefined && (closestImpact == undefined || time < closestImpact.time)) {
-                closestImpact = {A, B, time};
+            const impact = calculateImpact(A, B);
+            if (impact != undefined && (closestImpact == undefined || impact.time < closestImpact.time)) {
+                closestImpact = {A, B, ...impact};
             }
 
         }

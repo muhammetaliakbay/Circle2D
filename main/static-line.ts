@@ -8,10 +8,10 @@ export class StaticLine implements Element {
     ) {
     }
 
-    getType(): string {
+    getType() {
         return 'static-line';
     }
-    isStatic(): boolean {
-        return true;
+    getMass() {
+        return undefined;
     }
 }

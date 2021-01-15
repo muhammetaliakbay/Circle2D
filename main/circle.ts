@@ -5,15 +5,16 @@ export class Circle implements Element {
     constructor(
         public radius: number,
         public position: Vector,
-        public velocity: Vector
+        public velocity: Vector,
+        public mass: number
     ) {
     }
 
-    getType(): string {
+    getType() {
         return 'circle';
     }
-    isStatic(): boolean {
-        return false;
+    getMass() {
+        return this.mass;
     }
 
     public getPositionByTime(time: number): Vector {
