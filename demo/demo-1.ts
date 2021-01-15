@@ -4,6 +4,7 @@ import Chance from 'chance';
 import {Vector} from "../main/vector";
 import {calculateNextImpact} from "../main/impact";
 import {StaticLine} from "../main/static-line";
+import {applyResponse} from "../main/response";
 
 const chance = Chance();
 
@@ -12,21 +13,21 @@ const PI2 = Math.PI*2;
 export function demo1(
     tool: CanvasTool
 ) {
-    const count = chance.integer({min: 10, max:20});
-    const minRadius = 10;
-    const maxRadius = 30;
+    const count = chance.integer({min: 20, max:40});
+    const minRadius = 5;
+    const maxRadius = 15;
     const minX = 0;
     const maxX = 1000;
     const minY = 0;
     const maxY = 1000;
-    const maxVComp = 100;
+    const maxVComp = 200;
 
     const circles: Circle[] = [];
     for (let i = 0; i < count; i ++) {
         let angle = (PI2 / count) * i;
         const x = Math.cos(angle) * (maxX/3) + (maxX/2);
         const y = Math.sin(angle) * (maxY/3) + (maxY/2);
-        const v = (i%4==0?-1:2) * chance.floating({min: 0, max: maxVComp});
+        const v = - chance.floating({min: 0, max: maxVComp});
         const vx = -Math.cos(angle)*v;
         const vy = -Math.sin(angle)*v;
         const radius = chance.floating({
@@ -56,21 +57,27 @@ export function demo1(
         )
     ];
 
-    const impact = calculateNextImpact([
+    const elements = [
         ...circles,
         ...lines
-    ]);
+    ];
 
-    let impactT = impact?.time ?? 10;
-    /*let t = 0;
+    let impact = calculateNextImpact(elements);
 
-    tool.canvas.addEventListener('mousemove', ev => {
-        const mx = ev.x - (ev.target as HTMLCanvasElement).offsetLeft;
-        t = (mx / (ev.target as HTMLCanvasElement).width)*impactT;
-    });*/
+    let timeOffset = 0;
+    const animation = (frameTime) => {
+        let time = (frameTime - timeOffset)/1000;
 
-    const animation = (animationTime) => {
-        const t = Math.min(animationTime/1000, impactT);
+        if (impact != undefined) {
+            time = Math.min(impact.time, time);
+
+            if (time === impact.time) {
+                applyResponse(impact, elements);
+                impact = calculateNextImpact(elements, impact);
+                timeOffset = frameTime;
+                time = 0;
+            }
+        }
 
         tool.clear();
 
@@ -78,7 +85,7 @@ export function demo1(
             const impactCircle = impact?.A === circle || impact?.B === circle;
 
             tool.drawCircle({
-                center: circle.getPositionByTime(t),
+                center: circle.getPositionByTime(time),
                 radius: circle.radius,
                 style: {fill: impactCircle ? 'red' : 'white'}
             });

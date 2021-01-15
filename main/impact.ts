@@ -138,9 +138,17 @@ export function calculateImpact(
     return calculator(a, b);
 }
 
+export interface Impact {
+    A: Circle | StaticLine,
+    B: Circle | StaticLine,
+    time: number,
+    point: Vector
+}
+
 export function calculateNextImpact(
-    elements: (Circle | StaticLine)[]
-): {A: Circle | StaticLine, B: Circle | StaticLine, time: number, point: Vector} | undefined {
+    elements: (Circle | StaticLine)[],
+    lastImpact?: Impact
+): Impact | undefined {
     let closestImpact: {A: Circle | StaticLine, B: Circle | StaticLine, time: number, point: Vector} = undefined;
 
     const count = elements.length;
@@ -152,7 +160,11 @@ export function calculateNextImpact(
             const B = elements[j];
 
             const impact = calculateImpact(A, B);
-            if (impact != undefined && (closestImpact == undefined || impact.time < closestImpact.time)) {
+            if (
+                impact != undefined &&
+                !(A === lastImpact?.A && B === lastImpact?.B) &&
+                (closestImpact == undefined || impact.time < closestImpact.time)
+            ) {
                 closestImpact = {A, B, ...impact};
             }
 
