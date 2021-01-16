@@ -72,4 +72,29 @@ export class CanvasTool {
         this.context.closePath();
         this.context.stroke();
     }
+
+    drawText(
+        {
+            position: {x: x, y: y},
+            style: {
+                fill: fillStyle
+            },
+            text,
+            anchor = 'bottom'
+        }: {
+            position: {x: number, y: number},
+            style: {
+                fill: string
+            },
+            text: string,
+            anchor: 'top' | 'bottom'
+        }
+    ) {
+        this.context.fillStyle = fillStyle;
+        this.context.textBaseline = anchor;
+        this.context.font = "15px Arial"
+        this.context.fillText(
+            text, x, y
+        );
+    }
 }

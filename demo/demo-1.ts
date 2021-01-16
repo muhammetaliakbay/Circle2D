@@ -13,9 +13,9 @@ const PI2 = Math.PI*2;
 export function demo1(
     tool: CanvasTool
 ) {
-    const count = chance.integer({min: 20, max:40});
-    const minRadius = 5;
-    const maxRadius = 15;
+    const count = chance.integer({min: 40, max:100});
+    const minRadius = 1;
+    const maxRadius = 9;
     const minX = 0;
     const maxX = 1000;
     const minY = 0;
@@ -27,7 +27,7 @@ export function demo1(
         let angle = (PI2 / count) * i;
         const x = Math.cos(angle) * (maxX/3) + (maxX/2);
         const y = Math.sin(angle) * (maxY/3) + (maxY/2);
-        const v = - chance.floating({min: 0, max: maxVComp});
+        const v = chance.floating({min: 0, max: maxVComp});
         const vx = -Math.cos(angle)*v;
         const vy = -Math.sin(angle)*v;
         const radius = chance.floating({
@@ -54,7 +54,10 @@ export function demo1(
         ),
         new StaticLine(
             new Vector(0, maxY - 20), new Vector(1, maxY - 20)
-        )
+        ),
+        /*new StaticLine(
+            new Vector(0, maxY), new Vector(maxX, 0)
+        )*/
     ];
 
     const elements = [
@@ -63,22 +66,22 @@ export function demo1(
     ];
 
     let impact = calculateNextImpact(elements);
-
     let timeOffset = 0;
+
+    const speed = 1/1000;
+    // const fps = 20;
     const animation = (frameTime) => {
-        let time = (frameTime - timeOffset)/500;
+        const time = frameTime * speed;
+        // const nextTime = (frameTime + (1000/fps)) * speed;
 
-        if (impact != undefined) {
-            time = Math.min(impact.time, time);
+        while(impact != undefined && (timeOffset + impact.time) <= time) {
+            timeOffset += impact.time;
 
-            if (time === impact.time) {
-                applyResponse(impact, elements);
-                impact = calculateNextImpact(elements, impact);
-                console.log(impact);
-                timeOffset = frameTime;
-                time = 0;
-            }
+            applyResponse(impact, elements);
+            impact = calculateNextImpact(elements, impact);
         }
+
+        const drawTime = time - timeOffset;
 
         tool.clear();
 
@@ -86,7 +89,7 @@ export function demo1(
             const impactCircle = impact?.A === circle || impact?.B === circle;
 
             tool.drawCircle({
-                center: circle.getPositionByTime(time),
+                center: circle.getPositionByTime(drawTime),
                 radius: circle.radius,
                 style: {fill: impactCircle ? 'red' : 'white'}
             });
@@ -112,6 +115,21 @@ export function demo1(
                 style: {fill: 'yellow'}
             });
         }
+
+        const totalEnergy = elements
+            .filter(elm => elm instanceof Circle)
+            .reduce(
+                (totalEnergy, circle: Circle) =>
+                    totalEnergy + Vector.scalar(circle.velocity) * circle.mass,
+                0
+            );
+
+        tool.drawText({
+            text: `Total Energy: ${totalEnergy}`,
+            position: {x: 30, y: 30},
+            anchor: 'top',
+            style: {fill: 'white'}
+        });
 
         window.requestAnimationFrame(animation);
     };
